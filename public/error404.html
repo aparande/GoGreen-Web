@@ -1,0 +1,60 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <meta name="description" content="">
+	    <meta name="author" content="">
+
+	    <title>Greenfoot</title>
+
+	    <!-- Bootstrap Core CSS -->
+	    <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	    <link href="css/new-age.css" rel="stylesheet">
+
+	    <!-- JQuery -->
+	    <script src="lib/jquery/jquery.min.js"></script>
+    	<!-- Bootstrap Core JavaScript -->
+    	<script src="lib/bootstrap/js/bootstrap.min.js"></script>
+
+    	<script>
+    		$(document).ready(function() {
+    			$("#back").click(function() {
+    				window.location.assign("/");
+    			});
+    		});
+    	</script>
+
+    	<style>
+    		.centered {
+    			position: fixed;
+    			top: 50%;
+    			left: 50%;
+    			transform: translate(-50%, -50%);
+    		}
+
+    		.off-centered {
+    			position: fixed;
+    			top: 75%;
+    			left: 50%;
+    			transform: translate(-50%, -50%);
+    		}
+
+    		#back {
+    			position: fixed;
+    			left: 50%;
+    			top: 90%;
+    			transform: translate(-50%, -50%);
+    			width: 200px;
+    			height: 50px;
+    		}
+    	</style>
+    </head>
+    <body style="background-color: #2ecc7f">
+    	<div class="container-fluid">
+    		<img src="img/LeafLogo_white.png" class="centered" height="50%"/>
+    		<h1 class="off-centered" style="color:white; line-spacing: 2em; font-family: 'Roboto', sans-serif;">We couldn't find this page :(</h1>
+    		<div class="btn btn-outline btn-xl" id="back">Back to Home</div>
+    	</div>
+    </body>
+</html>

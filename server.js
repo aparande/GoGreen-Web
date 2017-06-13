@@ -9,6 +9,12 @@ var session = require('express-session');
 
 var app = express();
 
+app.use(express.static(__dirname + '/public'));
+app.use("/img", express.static(__dirname + '/public'));
+app.use("/css", express.static(__dirname + '/public'));
+app.use("/js", express.static(__dirname + '/public'));
+app.use("/lib", express.static(__dirname + '/public'));
+
 var dbCreds = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -26,8 +32,12 @@ app.get('/input', function(request, response) {
     });
 });
 
-app.get('*', function(request, response) {
+app.get('/', function(request, response) {
 	response.sendFile('index.html', {root:path.join(__dirname, 'public')});
 });
 
-app.listen(8080, () => console.log('Server running on 8080'));
+app.get('*', function(request, response) {
+	response.sendFile('error404.html', {root:path.join(__dirname, 'public')});
+});
+
+app.listen(8000, () => console.log('Server running on 8080'));
