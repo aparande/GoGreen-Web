@@ -1,3 +1,4 @@
 node_modules
 *.zip
 *.pem
+.env
