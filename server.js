@@ -70,6 +70,57 @@ app.post('/input', function(request, response) {
     });
 });
 
+app.post('/updateDataPoint', function(request, response) {
+    var con = mysql.createConnection(dbCreds);
+    con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		var profId = con.escape(request.body.profId);
+		var type = con.escape(request.body.dataType);
+		var month = con.escape(request.body.month);
+		var amount = con.escape(request.body.amount);
+
+		var query = "UPDATE Locale_Data SET Amount = "+amount+" WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
+
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message:'Could not update data'});
+			}
+
+			response.send({status: 'Success', message: "Data updated successfully"});
+		});
+    });
+});
+
+app.post('/deleteDataPoint', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+
+		var profId = con.escape(request.body.profId);
+		var type = con.escape(request.body.dataType);
+		var month = con.escape(request.body.month);
+
+		var query = "DELETE FROM Locale_Data WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not delete data'});
+			}
+
+			response.send({status:'Success', message: "Data deleted successfully"});
+		});
+	});
+});
+
 app.get('/', function(request, response) {
 	response.sendFile('index.html', {root:path.join(__dirname, 'public')});
 });
