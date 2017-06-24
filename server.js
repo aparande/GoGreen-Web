@@ -64,7 +64,7 @@ app.post('/input', function(request, response) {
 				console.log(error.message);
 				response.send({status: 'Failed', message:'Could not save data'});
 			}
-
+			con.end()
 			response.send({status: 'Success', message: "Data saved successfully"});
 		});
     });
@@ -90,7 +90,7 @@ app.post('/updateDataPoint', function(request, response) {
 				console.log(error.message);
 				response.send({status: 'Failed', message:'Could not update data'});
 			}
-
+			con.end()
 			response.send({status: 'Success', message: "Data updated successfully"});
 		});
     });
@@ -115,8 +115,137 @@ app.post('/deleteDataPoint', function(request, response) {
 				console.log(error.message);
 				response.send({status: 'Failed', message: 'Could not delete data'});
 			}
-
+			con.end()
 			response.send({status:'Success', message: "Data deleted successfully"});
+		});
+	});
+});
+
+app.post('/addToEGrid', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		var zip = con.escape(request.body.zip);
+		var state = con.escape(request.body.state);
+		var subregion = con.escape(request.body.subregion);
+		var factor = con.escape(request.body.factor);
+
+		var query = "INSERT INTO EGrid (Zip, State, Subregion, e_factor) VALUES (";
+		query += zip+", "+state+", "+subregion+", "+factor+");";
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not add data'});
+			}
+			con.end()
+			response.send({status:'Success', message: "Data added successfully"});
+		});
+	});
+});
+
+app.post('/getFromEGrid', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		var zip = con.escape(request.body.zip);
+		//var state = con.escape(request.body.state);
+
+		var query = "SELECT e_factor, Subregion FROM EGrid WHERE Zip="+zip+";";
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not find E_Factor because of Error'});
+				return
+			}
+
+			if (results.length == 0) {
+				response.send({status: 'Failed', message: 'Could not find E_Factor because of Error'});
+				return
+			}
+
+			con.end()
+			response.send({
+				status:'Success', 
+				message: "E_Factor retrieved successfully",
+				e_factor: results[0].e_factor,
+				subregion: results[0].Subregion,
+			});
+		});
+	});
+});
+
+app.post('/addToConsumption', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		var type = con.escape(request.body.type);
+		var state = con.escape(request.body.state);
+		var country = con.escape(request.body.country);
+		var year = con.escape(request.body.year);
+		var consumption = con.escape(request.body.value);
+
+		var query = "INSERT INTO Consumption (Type, State, Country, Year, Consumption) VALUES (";
+		query += type+", "+state+", "+country+", "+year+", "+consumption+");";
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not add data'});
+			}
+			con.end()
+			response.send({status:'Success', message: "Data added successfully"});
+		});
+	});
+});
+
+app.post('/getFromConsumption', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			con.end()
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		var type = con.escape(request.body.type);
+		var state = con.escape(request.body.state);
+		var country = con.escape(request.body.country);
+
+		var query = "SELECT Year, Consumption from Consumption WHERE Type="+type+" AND State="+state+" AND Country="+country+";";
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				con.end()
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not add data'});
+			}
+			if (results.length == 0) {
+				con.end()
+				console.log("Couldn't find Consumption for Query: "+type+", "+state+", "+country)
+				response.send({
+					status: 'Failed',
+					message: "Couldn't find Consumption for Query: "+type+", "+state+", "+country
+				});
+				return;
+			}
+
+			con.end()
+			response.send({
+				status:'Success', 
+				message: "Consumption retrieved successfully",
+				year: results[0].Year,
+				value: results[0].Consumption
+			});
 		});
 	});
 });
