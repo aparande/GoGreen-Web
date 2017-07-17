@@ -30,7 +30,8 @@ var dbCreds = {
     port: mySQLPort,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
+    multipleStatements: true
 };
 
 
@@ -247,6 +248,139 @@ app.post('/getFromConsumption', function(request, response) {
 				value: results[0].Consumption
 			});
 		});
+	});
+});
+
+app.post('/logEnergyPoints', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		var userId = con.escape(request.body.id);
+		var state = con.escape(request.body.state);
+		var country = con.escape(request.body.country);
+		var city = con.escape(request.body.city);
+		var points = con.escape(request.body.points);
+
+		var query = "INSERT INTO EnergyPoints (UserId, State, Country, City, Points) VALUES (";
+		query += userId+", "+state+", "+country+", "+city+", "+points+");";
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not add Energy Points'});
+			}
+			con.end()
+			response.send({status:'Success', message: "Energy Points added successfully"});
+		});
+	});
+});
+
+app.post('/updateEnergyPoints', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		var userId = con.escape(request.body.id);
+		var points = con.escape(request.body.points);
+
+		var query = "UPDATE EnergyPoints SET Points="+points+" WHERE UserId="+userId+";";
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not update Energy points'});
+			}
+			con.end()
+			response.send({status:'Success', message: "Energy points successfully updated"});
+		});
+	});
+});
+
+app.post('/getCityRank', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		
+		var userId = con.escape(request.body.id)
+		var city = con.escape(request.body.city)
+		var state = con.escape(request.body.state)
+		var country = con.escape(request.body.country)
+
+		var query = "SELECT rank FROM (SELECT @rank:=@rank+1 as rank, Points, UserId FROM EnergyPoints, (SELECT @rank:=0) r WHERE City=";
+		query += city + " AND State="+state+" AND Country="+country+" ORDER BY POINTS DESC) t WHERE UserId="+userId+";";
+		query += "SELECT COUNT(UserId) as Count FROM EnergyPoints WHERE City="+city+" AND State="+state+" AND Country="+country+";";
+
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not add data'});
+			}
+			con.end();
+			if (results[0].length == 0) {
+				response.send({
+					"status":"Failure",
+					"message":"Can't get rank because user hasnt logged energy points"
+				});
+				return;
+			}
+
+			response.send({
+				"status":"Success",
+				"message":"successfully retrieved rank",
+				"Rank":results[0][0].rank,
+				"Count":results[1][0].Count
+			});
+		})
+	});
+});
+
+app.post('/getStateRank', function(request, response) {
+	var con = mysql.createConnection(dbCreds);
+	con.connect(function(err) {
+		if (err) {
+			console.log(err.message);
+			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
+			return;
+		}
+		
+		var userId = con.escape(request.body.id)
+		var state = con.escape(request.body.state)
+		var country = con.escape(request.body.country)
+
+		var query = "SELECT rank FROM (SELECT @rank:=@rank+1 as rank, Points, UserId FROM EnergyPoints, (SELECT @rank:=0) r WHERE State=";
+		query += state+" AND Country="+country+" ORDER BY POINTS DESC) t WHERE UserId="+userId+";";
+		query += "SELECT COUNT(UserId) as Count FROM EnergyPoints WHERE State="+state+" AND Country="+country+";";
+
+		con.query(query, function(error, results, fields) {
+			if (error) {
+				console.log(error.message);
+				response.send({status: 'Failed', message: 'Could not add data'});
+			}
+			con.end();
+
+			if (results[0].length == 0) {
+				response.send({
+					"status":"Failure",
+					"message":"Can't get rank because user hasnt logged energy points"
+				});
+				return;
+			}
+			response.send({
+				"status":"Success",
+				"message":"successfully retrieved rank",
+				"Rank":results[0][0].rank,
+				"Count":results[1][0].Count
+			});
+		})
 	});
 });
 
