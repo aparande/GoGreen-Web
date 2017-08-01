@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>GoGreen</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+
+    <!-- Plugin CSS -->
+    <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="lib/simple-line-icons/css/simple-line-icons.css">
+    <link rel="stylesheet" href="lib/device-mockups/device-mockups.min.css">
+
+    <!-- Theme CSS -->
+    <link href="css/new-age.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- jQuery -->
+    <script src="lib/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+
+    <style>
+        .centered {
+            text-align: center;
+        }
+
+        .centered h3 {
+            font-size: 25px;
+            color:white;
+            width:50%;
+            margin: auto
+        }
+
+        .leaf {
+            margin-top:100px;
+            height: 200px;
+            margin-bottom: 20px
+        }
+
+        #back {
+            margin-top: 20px;
+        }
+
+        a:hover {
+            color:white;
+        }
+
+        @media(max-width: 768px) {
+            .centered h3 {
+                font-size: 15px;
+                color:white;
+                width:90%;
+                margin: auto
+            }
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $("#back").click(function() {
+                window.location.assign("index.html");
+            });
+        });
+    </script>
+
+</head>
+
+<body style="background-color: #2ecc71">
+    <div class="container-fluid">
+        <div class="row centered">
+            <div class="col-lg-12">
+                <img src="img/LeafLogo_white.png" class="leaf"/>
+            </div>
+        </div>
+        <div class="row centered">
+            <div class="col-lg-12">
+                <h3>Thank you for signing up to be a beta tester. You will soon receive an email with instructions on how to download GoGreen. If you have any questions, contact us at <a href="mailto:gogreenappinfo@gmail.com" style="display:inline">gogreenappinfo@gmail.com</a></h3>
+                <div class="btn btn-outline btn-xl" id="back">Back to Home</div>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>

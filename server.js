@@ -5,6 +5,7 @@ var http = require('http');
 var path = require('path');
 var mysql = require('mysql');
 var bodyParser = require('body-parser');
+var nodemailer = require('nodemailer');
 
 var session = require('express-session');
 
@@ -122,32 +123,6 @@ app.post('/deleteDataPoint', function(request, response) {
 	});
 });
 
-app.post('/addToEGrid', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
-		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
-		}
-		var zip = con.escape(request.body.zip);
-		var state = con.escape(request.body.state);
-		var subregion = con.escape(request.body.subregion);
-		var factor = con.escape(request.body.factor);
-
-		var query = "INSERT INTO EGrid (Zip, State, Subregion, e_factor) VALUES (";
-		query += zip+", "+state+", "+subregion+", "+factor+");";
-		con.query(query, function(error, results, fields) {
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not add data'});
-			}
-			con.end()
-			response.send({status:'Success', message: "Data added successfully"});
-		});
-	});
-});
-
 app.post('/getFromEGrid', function(request, response) {
 	var con = mysql.createConnection(dbCreds);
 	con.connect(function(err) {
@@ -179,33 +154,6 @@ app.post('/getFromEGrid', function(request, response) {
 				e_factor: results[0].e_factor,
 				subregion: results[0].Subregion,
 			});
-		});
-	});
-});
-
-app.post('/addToConsumption', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
-		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
-		}
-		var type = con.escape(request.body.type);
-		var state = con.escape(request.body.state);
-		var country = con.escape(request.body.country);
-		var year = con.escape(request.body.year);
-		var consumption = con.escape(request.body.value);
-
-		var query = "INSERT INTO Consumption (Type, State, Country, Year, Consumption) VALUES (";
-		query += type+", "+state+", "+country+", "+year+", "+consumption+");";
-		con.query(query, function(error, results, fields) {
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not add data'});
-			}
-			con.end()
-			response.send({status:'Success', message: "Data added successfully"});
 		});
 	});
 });
@@ -383,6 +331,46 @@ app.post('/getStateRank', function(request, response) {
 		})
 	});
 });
+
+app.post('/sendEmail', function(request, response) {
+	var email = request.body.email
+	var subject = request.body.subject
+
+	var message = request.body.message
+	var name = request.body.name
+	if (name == undefined)
+		name = "";
+	if (message == undefined)
+		message = ""
+
+	var text = "Email: ";
+	text += email+"\nName: ";
+	text += name+"\nMessage: ";
+	text += message;
+
+	var transporter = nodemailer.createTransport({
+		service: 'gmail',
+		auth: {
+			user: 'gogreenappinfo@gmail.com',
+			pass: '8G87!HTOQvr7@rSh'
+		}
+	});
+
+	var mailOptions = {
+		from: 'gogreenappinfo@gmail.com',
+		to: 'gogreenappinfo@gmail.com',
+		subject: subject,
+		text: text
+	};
+
+	transporter.sendMail(mailOptions, function(error, info) {
+		if (error) {
+			console.log(error);
+		} else {
+			console.log('Email sent: '+info.response);
+		}
+	});
+})
 
 app.get('/', function(request, response) {
 	response.sendFile('index.html', {root:path.join(__dirname, 'public')});
