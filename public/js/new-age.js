@@ -50,11 +50,10 @@
     }).on('success.form.bv', function(e) {
         e.preventDefault()
         var data = $("[name='betaEmail']").val()
-        console.log(data)
-        $.post("http://localhost:8000/sendEmail", {email:data, subject:"Beta Signup"}, function(result) {
+        $.post("http://ec2-13-59-198-207.us-east-2.compute.amazonaws.com:8000/sendEmail", {email:data, subject:"Beta Signup"}, function(result) {
+            window.location.assign('thank-you.html');
         });
-        window.location.assign('thank-you.html');
-    })
+    });
 
     $('#contact-form').bootstrapValidator({
 //        live: 'disabled',
@@ -95,7 +94,7 @@
         var email = $("[name='email']").val()
         var name = $("[name='Name']").val()
         var message = $("[name='Message']").val()
-        $.post("http://localhost:8000/sendEmail", {email:email, subject:"Contact", name: name, message: message}, function(result) {
+        $.post("http://172.31.30.25:8000/sendEmail", {email:email, subject:"Contact", name: name, message: message}, function(result) {
         });
 
         window.alert("Thank you for contacting us. We will get back to you soon");

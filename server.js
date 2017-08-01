@@ -366,10 +366,20 @@ app.post('/sendEmail', function(request, response) {
 	transporter.sendMail(mailOptions, function(error, info) {
 		if (error) {
 			console.log(error);
+			response.send({
+				"status":"Error",
+				"message":"Email not Sent",
+			});
 		} else {
 			console.log('Email sent: '+info.response);
+			response.send({
+				"status":"Success",
+				"message":"Sent email",
+			});
 		}
 	});
+
+	
 })
 
 app.get('/', function(request, response) {
