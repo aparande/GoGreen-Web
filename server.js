@@ -348,17 +348,20 @@ app.post('/sendEmail', function(request, response) {
 	text += name+"\nMessage: ";
 	text += message;
 
+	var emailHost = process.env.EMAIL_USER;
+	var emailPass = process.env.EMAIL_PASS;
+
 	var transporter = nodemailer.createTransport({
 		service: 'gmail',
 		auth: {
-			user: 'gogreenappinfo@gmail.com',
-			pass: '8G87!HTOQvr7@rSh'
+			user: emailHost,
+			pass: emailPass
 		}
 	});
 
 	var mailOptions = {
-		from: 'gogreenappinfo@gmail.com',
-		to: 'gogreenappinfo@gmail.com',
+		from: emailHost,
+		to: emailHost,
 		subject: subject,
 		text: text
 	};
@@ -366,12 +369,16 @@ app.post('/sendEmail', function(request, response) {
 	transporter.sendMail(mailOptions, function(error, info) {
 		if (error) {
 			console.log(error);
+
+			response.setHeader('Access-Control-Allow-Origin', '*');
 			response.send({
 				"status":"Error",
 				"message":"Email not Sent",
 			});
 		} else {
 			console.log('Email sent: '+info.response);
+
+			response.setHeader('Access-Control-Allow-Origin', '*');
 			response.send({
 				"status":"Success",
 				"message":"Sent email",
