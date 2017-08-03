@@ -1,7 +1,7 @@
 {
-  "name": "greenfoot",
+  "name": "GoGreen",
   "version": "1.0.0",
-  "description": "EC2 Instance for Greenfoot",
+  "description": "Heroku server for GoGreen: Carbon Tracker",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,6 +13,7 @@
     "dotenv": "^4.0.0",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
-    "mysql": "^2.13.0"
+    "mysql": "^2.13.0",
+    "nodemailer": "^4.0.1"
   }
 }
