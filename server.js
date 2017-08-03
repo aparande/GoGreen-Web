@@ -397,4 +397,6 @@ app.get('*', function(request, response) {
 	response.sendFile('error404.html', {root:path.join(__dirname, 'public')});
 });
 
-app.listen(8000, () => console.log('Server running on 8000'));
+app.listen(process.env.PORT || 8000, function() {
+	console.log('Express server listening on port %d in %s mode', this.address().port, app.settings.env);
+});
