@@ -465,3 +465,11 @@ body {
 .help-block {
   color: white !important;
 }
+
+#copyright {
+  cursor: pointer;
+}
+
+#copyright:hover {
+  text-decoration: underline;
+}

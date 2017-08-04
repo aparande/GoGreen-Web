@@ -101,4 +101,8 @@
         });
     })
 
+    $('#copyright').click(function() {
+        window.location.assign("license.txt");
+    });
+
 })(jQuery); // End of use strict

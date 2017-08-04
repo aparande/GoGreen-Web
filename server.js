@@ -6,10 +6,13 @@ var path = require('path');
 var mysql = require('mysql');
 var bodyParser = require('body-parser');
 var nodemailer = require('nodemailer');
+var favicon = require('serve-favicon');
 
 var session = require('express-session');
 
 var app = express();
+
+app.use(favicon(__dirname+'/public/img/favicon.ico'));
 
 app.use(bodyParser.urlencoded({
 	extended:true
