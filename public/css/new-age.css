@@ -370,6 +370,7 @@ footer {
 footer p {
   font-size: 12px;
   margin: 0;
+  display: inline;
 }
 footer ul {
   margin-bottom: 0;
@@ -466,10 +467,10 @@ body {
   color: white !important;
 }
 
-#copyright {
+.footerlink {
   cursor: pointer;
 }
 
-#copyright:hover {
+.footerlink:hover {
   text-decoration: underline;
 }

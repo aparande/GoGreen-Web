@@ -26,14 +26,16 @@ app.use("/css", express.static(__dirname + '/public'));
 app.use("/js", express.static(__dirname + '/public'));
 app.use("/lib", express.static(__dirname + '/public'));
 
-var mySQLHost = process.env.DB_HOST || '127.0.0.1';
-var mySQLPort = process.env.DB_PORT || '';
+var mySQLHost = (app.settings.env == "development") ? process.env.LOCAL_DB_HOST : process.env.DB_HOST;
+var mySQLPort = (app.settings.env == "development") ? '' : process.env.DB_PORT;
+var mySQLPass = (app.settings.env == "development") ? process.env.LOCAL_DB_PASS : process.env.DB_PASS;
+
 
 var dbCreds = {
     host: mySQLHost,
     port: mySQLPort,
     user: process.env.DB_USER,
-    password: process.env.DB_PASS,
+    password: mySQLPass,
     database: process.env.DB_NAME,
     multipleStatements: true
 };

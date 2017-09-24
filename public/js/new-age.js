@@ -101,7 +101,11 @@
         });
     })
 
-    $('#copyright').click(function() {
+    $('#privacy').click(function() {
+        window.location.assign("privacy.txt");
+    });
+
+    $('#license').click(function() {
         window.location.assign("license.txt");
     });
 
