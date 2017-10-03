@@ -28,34 +28,6 @@
         }
     })
 
-    $('#beta-signup').bootstrapValidator({
-        message: "This value is not valid",
-        feedbackIcons: {
-            valid: 'glyphicon glyphicon-ok',
-            invalid: 'glyphicon glyphicon-remove',
-            validating: 'glyphicon glyphicon-refresh'
-        },
-        fields: {
-            email: {
-                validators: {
-                    notEmpty: {
-                        message: 'The email address is required'
-                    },
-                    emailAddress: {
-                        message: 'The email address is not valid'
-                    }
-                }
-            }
-        }
-    }).on('success.form.bv', function(e) {
-        e.preventDefault()
-        
-        var data = $("[name='betaEmail']").val()
-        $.post("https://gogreencarbonapp.herokuapp.com/sendEmail", {email:data, subject:"Beta Signup"}, function(result) {
-            window.location.assign("thank-you.html");
-        });
-    });
-
     $('#contact-form').bootstrapValidator({
 //        live: 'disabled',
         message: 'This value is not valid',
