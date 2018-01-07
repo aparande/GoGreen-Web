@@ -7,10 +7,12 @@ var mysql = require('mysql');
 var bodyParser = require('body-parser');
 var nodemailer = require('nodemailer');
 var favicon = require('serve-favicon');
-
 var session = require('express-session');
 
-var app = express();
+var app = module.exports = express();
+
+//This has to go here because it depends on the app defined above
+var factors = require("./factors");
 
 app.use(favicon(__dirname+'/public/img/favicon.ico'));
 
@@ -26,9 +28,9 @@ app.use("/css", express.static(__dirname + '/public'));
 app.use("/js", express.static(__dirname + '/public'));
 app.use("/lib", express.static(__dirname + '/public'));
 
-var mySQLHost = (app.settings.env == "development") ? process.env.LOCAL_DB_HOST : process.env.DB_HOST;
-var mySQLPort = (app.settings.env == "development") ? '' : process.env.DB_PORT;
-var mySQLPass = (app.settings.env == "development") ? process.env.LOCAL_DB_PASS : process.env.DB_PASS;
+var mySQLHost = (process.env.MODE == "development") ? process.env.LOCAL_DB_HOST : process.env.DB_HOST;
+var mySQLPort = (process.env.MODE == "development") ? '' : process.env.DB_PORT;
+var mySQLPass = (process.env.MODE == "development") ? process.env.LOCAL_DB_PASS : process.env.DB_PASS;
 
 
 var dbCreds = {
@@ -128,36 +130,19 @@ app.post('/deleteDataPoint', function(request, response) {
 });
 
 app.post('/getFromEGrid', function(request, response) {
-	pool.getConnection(function(err, connection) {
+	var zip = request.body.zip;
+	factors.egrid(zip, function(err, values) {
 		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
+			err.Success = false;
+			response.send(err);
+			return
 		}
-		var zip = connection.escape(request.body.zip);
-		//var state = con.escape(request.body.state);
 
-		var query = "SELECT e_factor, Subregion FROM EGrid WHERE Zip="+zip+";";
-		connection.query(query, function(error, results, fields) {
-			connection.release();
-
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not find E_Factor because of Error'});
-				return
-			}
-
-			if (results.length == 0) {
-				response.send({status: 'Failed', message: 'Could not find E_Factor because of Error'});
-				return
-			}
-
-			response.send({
-				status:'Success',
-				message: "E_Factor retrieved successfully",
-				e_factor: results[0].e_factor,
-				subregion: results[0].Subregion,
-			});
+		response.send({
+			Success: true,
+			Message: "Successfully retrieved E_Grid",
+			e_factor: values.e_factor,
+			subregion: values.subregion
 		});
 	});
 });
@@ -395,5 +380,5 @@ app.get('*', function(request, response) {
 });
 
 app.listen(process.env.PORT || 8000, function() {
-	console.log('Express server listening on port %d in %s mode', this.address().port, app.settings.env);
+	console.log('Express server listening on port %d in %s mode', this.address().port, process.env.MODE);
 });

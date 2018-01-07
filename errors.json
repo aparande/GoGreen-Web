@@ -1,0 +1,17 @@
+{
+  "Success": {
+    "Status": "Success"
+  },
+  "ConnectionFailure": {
+    "Status": "Failure",
+    "ErrorType": "Connection Failure"
+  },
+  "QueryError": {
+    "Status": "Failure",
+    "ErrorType": "Query Error"
+  },
+  "ZeroResults": {
+    "Status": "Failure",
+    "ErrorType": "Results Error"
+  }
+}
