@@ -27,6 +27,49 @@ module.exports = {
       }
       callback(undefined, values);
     });
+  },
+  consumption: function(type, state, country, callback) {
+    var data = {
+      "type":type,
+      "state":state,
+      "country": country
+    }
+    getConsumption(data, function(err, values) {
+      if (err) {
+        callback({ErrorType: err.ErrorType, Message: "Couldn't find Consumption for Query: "+type+", "+state+", "+country}, undefined);
+        return
+      }
+      callback(undefined, values);
+    });
+  },
+  cityRank: function(id, city, state, country, callback) {
+    var data = {
+      "id":id,
+      "city":city,
+      "state":state,
+      "country":country
+    };
+    getCityRank(data, function(err, values) {
+      if (err) {
+        callback({ErrorType: err.ErrorType, Message: "Couldn't get city rank for user: "+id}, undefined);
+        return
+      }
+      callback(undefined, values);
+    });
+  },
+  stateRank: function(id, state, country, callback) {
+    var data = {
+      "id":id,
+      "state":state,
+      "country":country
+    };
+    getStateRank(data, function(err, values) {
+      if (err) {
+        callback({ErrorType: err.ErrorType, Message: "Couldn't get state rank for user: "+id}, undefined);
+        return
+      }
+      callback(undefined, values);
+    });
   }
 }
 
@@ -50,7 +93,6 @@ function getFromEGrid(zipCode, callback) {
 			}
 
 			if (results.length == 0) {
-        console.log(query);
 				callback(errors.ZeroResults, undefined);
 				return
 			}
@@ -62,5 +104,115 @@ function getFromEGrid(zipCode, callback) {
 
       callback(undefined, values);
 		});
+	});
+}
+
+function getConsumption(data, callback) {
+  pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err.message);
+      callback(errors.ConnectionFailure, undefined);
+			return;
+		}
+		var type = connection.escape(data.type);
+		var state = connection.escape(data.state);
+		var country = connection.escape(data.country);
+
+		var query = "SELECT Year, Consumption from Consumption WHERE Type="+type+" AND State="+state+" AND Country="+country+";";
+		connection.query(query, function(error, results, fields) {
+			connection.release();
+			if (error) {
+        console.log(error.message);
+        callback(errors.QueryError, undefined);
+				return
+			}
+
+			if (results.length == 0) {
+        callback(errors.ZeroResults, undefined);
+				return
+			}
+
+      var values = {
+        Year: results[0].Year,
+        Consumption: results[0].Consumption
+      }
+
+      callback(undefined, values);
+		});
+	});
+}
+
+function getCityRank(data, callback) {
+  pool.getConnection(function(err, connection) {
+		if (err) {
+      console.log(err.message);
+      callback(errors.ConnectionFailure, undefined);
+			return;
+		}
+
+		var userId = connection.escape(data.id)
+		var city = connection.escape(data.city)
+		var state = connection.escape(data.state)
+		var country = connection.escape(data.country)
+
+		var query = "SELECT rank FROM (SELECT @rank:=@rank+1 as rank, Points, UserId FROM EnergyPoints, (SELECT @rank:=0) r WHERE City=";
+		query += city + " AND State="+state+" AND Country="+country+" ORDER BY POINTS DESC) t WHERE UserId="+userId+";";
+		query += "SELECT COUNT(UserId) as Count FROM EnergyPoints WHERE City="+city+" AND State="+state+" AND Country="+country+";";
+
+		connection.query(query, function(error, results, fields) {
+			connection.release();
+			if (error) {
+        console.log(error.message);
+        callback(errors.QueryError, undefined);
+				return
+			}
+			if (results[0].length == 0) {
+        callback(errors.ZeroResults, undefined);
+				return
+			}
+
+      var values = {
+        "Rank":results[0][0].rank,
+				"Count":results[1][0].Count
+      }
+      callback(undefined, values);
+		})
+	});
+}
+
+function getStateRank(data, callback) {
+  pool.getConnection(function(err, connection) {
+		if (err) {
+      console.log(err.message);
+      callback(errors.ConnectionFailure, undefined);
+			return;
+		}
+
+		var userId = connection.escape(data.id)
+		var state = connection.escape(data.state)
+		var country = connection.escape(data.country)
+
+		var query = "SELECT rank FROM (SELECT @rank:=@rank+1 as rank, Points, UserId FROM EnergyPoints, (SELECT @rank:=0) r WHERE State=";
+		query += state+" AND Country="+country+" ORDER BY POINTS DESC) t WHERE UserId="+userId+";";
+		query += "SELECT COUNT(UserId) as Count FROM EnergyPoints WHERE State="+state+" AND Country="+country+";";
+
+		connection.query(query, function(error, results, fields) {
+      connection.release();
+			if (error) {
+        console.log(error.message);
+        callback(errors.QueryError, undefined);
+				return
+			}
+			if (results[0].length == 0) {
+        callback(errors.ZeroResults, undefined);
+				return
+			}
+
+			var values = {
+        "Rank":results[0][0].rank,
+				"Count":results[1][0].Count
+      }
+      callback(undefined, values);
+		})
 	});
 }

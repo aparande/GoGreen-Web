@@ -148,39 +148,21 @@ app.post('/getFromEGrid', function(request, response) {
 });
 
 app.post('/getFromConsumption', function(request, response) {
-	pool.getConnection(function(err, connection) {
+	var type = request.body.type;
+	var state = request.body.state;
+	var country = request.body.country;
+	factors.consumption(type, state, country, function(err, values) {
 		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
+			err.Success = false;
+			response.send(err);
+			return
 		}
-		var type = connection.escape(request.body.type);
-		var state = connection.escape(request.body.state);
-		var country = connection.escape(request.body.country);
 
-		var query = "SELECT Year, Consumption from Consumption WHERE Type="+type+" AND State="+state+" AND Country="+country+";";
-		connection.query(query, function(error, results, fields) {
-			connection.release();
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not add data'});
-			}
-
-			if (results.length == 0) {
-				console.log("Couldn't find Consumption for Query: "+type+", "+state+", "+country)
-				response.send({
-					status: 'Failed',
-					message: "Couldn't find Consumption for Query: "+type+", "+state+", "+country
-				});
-				return;
-			}
-
-			response.send({
-				status:'Success',
-				message: "Consumption retrieved successfully",
-				year: results[0].Year,
-				value: results[0].Consumption
-			});
+		response.send({
+			Success: true,
+			Message: "Successfully retrieved Consumption",
+			Year: values.Year,
+			Consumption: values.Consumption
 		});
 	});
 });
@@ -234,83 +216,45 @@ app.post('/updateEnergyPoints', function(request, response) {
 });
 
 app.post('/getCityRank', function(request, response) {
-	pool.getConnection(function(err, connection) {
+	var userId = request.body.id;
+	var city = request.body.city;
+	var state = request.body.state;
+	var country = request.body.country;
+
+	factors.cityRank(userId, city, state, country, function(err, values) {
 		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
+			err.Success = false;
+			response.send(err);
+			return
 		}
 
-		var userId = connection.escape(request.body.id)
-		var city = connection.escape(request.body.city)
-		var state = connection.escape(request.body.state)
-		var country = connection.escape(request.body.country)
-
-		var query = "SELECT rank FROM (SELECT @rank:=@rank+1 as rank, Points, UserId FROM EnergyPoints, (SELECT @rank:=0) r WHERE City=";
-		query += city + " AND State="+state+" AND Country="+country+" ORDER BY POINTS DESC) t WHERE UserId="+userId+";";
-		query += "SELECT COUNT(UserId) as Count FROM EnergyPoints WHERE City="+city+" AND State="+state+" AND Country="+country+";";
-
-		connection.query(query, function(error, results, fields) {
-			connection.release();
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not add data'});
-			}
-			if (results[0].length == 0) {
-				response.send({
-					"status":"Failure",
-					"message":"Can't get rank because user hasnt logged energy points"
-				});
-				return;
-			}
-
-			response.send({
-				"status":"Success",
-				"message":"successfully retrieved rank",
-				"Rank":results[0][0].rank,
-				"Count":results[1][0].Count
-			});
-		})
+		response.send({
+			Success: true,
+			Message: "Successfully retrieved City Rank",
+			Rank: values.Rank,
+			Count: values.Count
+		});
 	});
 });
 
 app.post('/getStateRank', function(request, response) {
-	pool.getConnection(function(err, connection) {
+	var userId = request.body.id;
+	var state = request.body.state;
+	var country = request.body.country;
+
+	factors.stateRank(userId, state, country, function(err, values) {
 		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
+			err.Success = false;
+			response.send(err);
+			return
 		}
 
-		var userId = connection.escape(request.body.id)
-		var state = connection.escape(request.body.state)
-		var country = connection.escape(request.body.country)
-
-		var query = "SELECT rank FROM (SELECT @rank:=@rank+1 as rank, Points, UserId FROM EnergyPoints, (SELECT @rank:=0) r WHERE State=";
-		query += state+" AND Country="+country+" ORDER BY POINTS DESC) t WHERE UserId="+userId+";";
-		query += "SELECT COUNT(UserId) as Count FROM EnergyPoints WHERE State="+state+" AND Country="+country+";";
-
-		connection.query(query, function(error, results, fields) {
-			connection.release();
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not add data'});
-			}
-
-			if (results[0].length == 0) {
-				response.send({
-					"status":"Failure",
-					"message":"Can't get rank because user hasnt logged energy points"
-				});
-				return;
-			}
-			response.send({
-				"status":"Success",
-				"message":"successfully retrieved rank",
-				"Rank":results[0][0].rank,
-				"Count":results[1][0].Count
-			});
-		})
+		response.send({
+			Success: true,
+			Message: "Successfully retrieved State Rank",
+			Rank: values.Rank,
+			Count: values.Count
+		});
 	});
 });
 
