@@ -13,6 +13,7 @@ var app = module.exports = express();
 
 //This has to go here because it depends on the app defined above
 var factors = require("./factors");
+var user = require("./user");
 
 app.use(favicon(__dirname+'/public/img/favicon.ico'));
 
@@ -168,49 +169,22 @@ app.post('/getFromConsumption', function(request, response) {
 });
 
 app.post('/logEnergyPoints', function(request, response) {
-	pool.getConnection(function(err, connection) {
+	var userId = request.body.id;
+	var state = request.body.state;
+	var country = request.body.country;
+	var city = request.body.city;
+	var points = request.body.points;
+
+	user.logEP(userId, state, country, city, points, function(err) {
 		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
+			err.Success = false;
+			response.send(err);
+			return
 		}
-		var userId = connection.escape(request.body.id);
-		var state = connection.escape(request.body.state);
-		var country = connection.escape(request.body.country);
-		var city = connection.escape(request.body.city);
-		var points = connection.escape(request.body.points);
 
-		var query = "INSERT INTO EnergyPoints (UserId, State, Country, City, Points) VALUES (";
-		query += userId+", "+state+", "+country+", "+city+", "+points+");";
-		connection.query(query, function(error, results, fields) {
-			connection.release();
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not add Energy Points'});
-			}
-			response.send({status:'Success', message: "Energy Points added successfully"});
-		});
-	});
-});
-
-app.post('/updateEnergyPoints', function(request, response) {
-	pool.getConnection(function(err, connection) {
-		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
-		}
-		var userId = connection.escape(request.body.id);
-		var points = connection.escape(request.body.points);
-
-		var query = "UPDATE EnergyPoints SET Points="+points+" WHERE UserId="+userId+";";
-		connection.query(query, function(error, results, fields) {
-			connection.release();
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not update Energy points'});
-			}
-			response.send({status:'Success', message: "Energy points successfully updated"});
+		response.send({
+			Success: true,
+			Message: "Successfully Logged Energy Points",
 		});
 	});
 });
