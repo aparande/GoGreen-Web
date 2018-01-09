@@ -154,7 +154,7 @@ app.post('/getFromEGrid', function(request, response) {
 
 			con.end()
 			response.send({
-				status:'Success', 
+				status:'Success',
 				message: "E_Factor retrieved successfully",
 				e_factor: results[0].e_factor,
 				subregion: results[0].Subregion,
@@ -195,7 +195,7 @@ app.post('/getFromConsumption', function(request, response) {
 
 			con.end()
 			response.send({
-				status:'Success', 
+				status:'Success',
 				message: "Consumption retrieved successfully",
 				year: results[0].Year,
 				value: results[0].Consumption
@@ -262,7 +262,7 @@ app.post('/getCityRank', function(request, response) {
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
 			return;
 		}
-		
+
 		var userId = con.escape(request.body.id)
 		var city = con.escape(request.body.city)
 		var state = con.escape(request.body.state)
@@ -304,7 +304,7 @@ app.post('/getStateRank', function(request, response) {
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
 			return;
 		}
-		
+
 		var userId = con.escape(request.body.id)
 		var state = con.escape(request.body.state)
 		var country = con.escape(request.body.country)
@@ -391,7 +391,7 @@ app.post('/sendEmail', function(request, response) {
 		}
 	});
 
-	
+
 })
 
 app.get('/', function(request, response) {
@@ -402,6 +402,6 @@ app.get('*', function(request, response) {
 	response.sendFile('error404.html', {root:path.join(__dirname, 'public')});
 });
 
-app.listen(process.env.PORT || 7000, function() {
+app.listen(process.env.PORT || 8000, function() {
 	console.log('Express server listening on port %d in %s mode', this.address().port, app.settings.env);
 });
