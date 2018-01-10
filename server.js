@@ -14,6 +14,7 @@ var app = module.exports = express();
 //This has to go here because it depends on the app defined above
 var factors = require("./factors");
 var user = require("./user");
+var dataManager = require("./data");
 
 app.use(favicon(__dirname+'/public/img/favicon.ico'));
 
@@ -46,86 +47,36 @@ var dbCreds = {
 
 var pool = mysql.createPool(dbCreds);
 
-app.post('/input', function(request, response) {
-	pool.getConnection(function(err, connection) {
+app.post('/logData', function(request, response) {
+	var profId = request.body.profId; var type = request.body.dataType; var month = request.body.month;
+	var amount = request.body.amount; var city = request.body.city; var state = request.body.state; var country = request.body.country;
+
+	dataManager.input(profId, type, month, amount, city, state, country, function(err) {
 		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
+			err.Success = false;
+			response.send(err);
+			return
 		}
-		var profId = connection.escape(request.body.profId);
-		var type = connection.escape(request.body.dataType);
-		var month = connection.escape(request.body.month);
-		var amount = connection.escape(request.body.amount);
-		var city = connection.escape(request.body.city);
-		var state = connection.escape(request.body.state);
-		var country = connection.escape(request.body.country);
 
-		var query = "INSERT INTO Locale_Data (ProfId, DataType, Month, Amount, City, State, Country) VALUES (";
-		query += profId+", ";
-		query += type+", ";
-		query += month+", ";
-		query += amount+", ";
-		query += city+", ";
-		query += state+", ";
-		query += country+");";
-
-		connection.query(query, function(error, results, fields) {
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message:'Could not save data'});
-			}
-			connection.release();
-			response.send({status: 'Success', message: "Data saved successfully"});
-		});
-	})
-});
-
-app.post('/updateDataPoint', function(request, response) {
-	pool.getConnection(function(err, connection) {
-		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
-		}
-		var profId = connection.escape(request.body.profId);
-		var type = connection.escape(request.body.dataType);
-		var month = connection.escape(request.body.month);
-		var amount = connection.escape(request.body.amount);
-
-		var query = "UPDATE Locale_Data SET Amount = "+amount+" WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
-
-		connection.query(query, function(error, results, fields) {
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message:'Could not update data'});
-			}
-			connection.release()
-			response.send({status: 'Success', message: "Data updated successfully"});
+		response.send({
+			Success: true,
+			Message: "Successfully Added Data",
 		});
 	});
 });
 
 app.post('/deleteDataPoint', function(request, response) {
-	pool.getConnection(function(err, connection) {
+	var profId = request.body.profId; var type = request.body.dataType; var month = request.body.month;
+	dataManager.delete(profId, type, month, function(err) {
 		if (err) {
-			console.log(err.message);
-			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
-			return;
+			err.Success = false;
+			response.send(err);
+			return
 		}
 
-		var profId = connection.escape(request.body.profId);
-		var type = connection.escape(request.body.dataType);
-		var month = connection.escape(request.body.month);
-
-		var query = "DELETE FROM Locale_Data WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
-		connection.query(query, function(error, results, fields) {
-			if (error) {
-				console.log(error.message);
-				response.send({status: 'Failed', message: 'Could not delete data'});
-			}
-			connection.release()
-			response.send({status:'Success', message: "Data deleted successfully"});
+		response.send({
+			Success: true,
+			Message: "Successfully Deleted Data",
 		});
 	});
 });
