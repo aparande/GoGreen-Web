@@ -105,6 +105,25 @@ router.post('/logEnergyPoints', function(request, response) {
 	});
 });
 
+router.post('/fetchData', function(request, response) {
+	var userId = request.body.id;
+	var dataType = request.body.dataType;
+
+	user.fetch(userId, dataType, function(err, values) {
+		if (err) {
+			err.Success = false;
+			response.send(err);
+			return
+		}
+
+		response.send({
+			Success: true,
+			Message: "Successfully retrieved profile data",
+			Data: values
+		});
+	});
+});
+
 router.post('/getCityRank', function(request, response) {
 	var userId = request.body.id;
 	var city = request.body.city;

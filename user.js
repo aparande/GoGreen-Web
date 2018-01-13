@@ -35,7 +35,27 @@ module.exports = {
       }
       callback(undefined);
     })
-  }
+  },
+
+	fetch: function(userId, dataType, callback) {
+		var data = {
+      "id":userId,
+			"type": dataType
+    }
+
+		fetchData(data, function(err, results) {
+			if (err) {
+				if (err.ErrorType == errors.ZeroResults) {
+					callback({ ErrorType: err.ErrorType, Message: "Profile not found"}, undefined);
+				} else {
+					callback({ ErrorType: err.ErrorType, Message: "Error in fetching user data"}, undefined);
+				}
+
+        return
+      }
+      callback(undefined, results);
+		});
+	}
 }
 
 function logEnergyPoints(data, callback) {
@@ -62,6 +82,36 @@ function logEnergyPoints(data, callback) {
 			}
 
 			callback(undefined);
+		});
+	});
+}
+
+function fetchData(data, callback) {
+	pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err.message);
+			callback(errors.ConnectionFailure, undefined);
+			return;
+		}
+
+		var userId = connection.escape(data.id);
+		var dataType = connection.escape(data.type);
+
+		var query = "SELECT DataType, Month, Amount FROM Locale_Data WHERE ProfId="+userId+" AND DataType="+dataType+";";
+		connection.query(query, function(error, results, fields) {
+			connection.release();
+			if (error) {
+				console.log(error.message);
+        callback(errors.QueryError, undefined);
+				return
+			}
+
+			if (results.length == 0) {
+				callback(errors.ZeroResults, undefined);
+				return
+			}
+
+      callback(undefined, results);
 		});
 	});
 }
