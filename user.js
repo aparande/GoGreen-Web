@@ -1,5 +1,7 @@
 require('dotenv').config()
+var uuid = require('uuid-v4');
 var mysql = require('mysql');
+var bcrypt = require('bcrypt');
 
 var mySQLHost = (process.env.MODE == "development") ? process.env.LOCAL_DB_HOST : process.env.DB_HOST;
 var mySQLPort = (process.env.MODE == "development") ? '' : process.env.DB_PORT;
@@ -54,6 +56,22 @@ module.exports = {
         return
       }
       callback(undefined, results);
+		});
+	},
+
+	signup: function(userId, lastName, firstName, email, password, location = undefined, callback) {
+		var data = {
+			"id":userId, "lastName":lastName, "firstName":firstName, "email":email, "password": password
+		}
+		if (location != undefined) {
+			data["location"] = location;
+		}
+		signup(data, function(err, results) {
+			if (err) {
+				callback({ ErrorType: err.ErrorType, Message: "Error signing up user"}, undefined);
+        return
+      }
+      callback(undefined, results.userId);
 		});
 	}
 }
@@ -113,5 +131,56 @@ function fetchData(data, callback) {
 
       callback(undefined, results);
 		});
+	});
+}
+
+function signup(data, callback) {
+	pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err.message);
+			callback(errors.ConnectionFailure, undefined);
+			return;
+		}
+
+		var userId = data.id;
+		if (userId == undefined) {
+			userId = uuid();
+		}
+
+		userId = connection.escape(userId);
+		var lastName = connection.escape(data.lastName);
+		var firstName = connection.escape(data.firstName);
+		var email = connection.escape(data.email);
+		var city = undefined; var state = undefined; var country = undefined;
+		if (data.location !== undefined) {
+			city = connection.escape(data.location.city);
+			state = connection.escape(data.location.state);
+			country = connection.escape(data.location.country);
+		}
+
+		var password = connection.escape(data.password);
+		bcrypt.hash(password, 10, function(err, hash) {
+			if (err) {
+				console.log(err.message);
+			}
+
+			var query = "INSERT INTO Users (UserId, LastName, FirstName, Email, Password) VALUES (";
+			query += `${userId}, ${lastName}, ${firstName}, ${email}, ${password});`;
+			if (data.location != undefined) {
+				query = "INSERT INTO Users (UserId, LastName, FirstName, Email, Password, City, State, Country) VALUES (";
+				query += `${userId}, ${lastName}, ${firstName}, ${email}, ${password}, ${city}, ${state}, ${country});`;
+			}
+
+			connection.query(query, function(error, result) {
+				if (error) {
+	        console.log(error.message);
+	        callback(errors.QueryError, undefined);
+					return
+				}
+				connection.release();
+
+				callback(undefined, {"userId":userId});
+			});
+		})
 	});
 }

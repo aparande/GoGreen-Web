@@ -167,4 +167,27 @@ router.post('/getStateRank', function(request, response) {
 	});
 });
 
+router.post('/createAccount', function(request, response) {
+	var userId = request.body.id;
+	var lastName = request.body.lastName;
+	var firstName = request.body.firstName;
+	var email = request.body.email;
+	var password = request.body.password;
+	var location = request.body.location;
+
+	user.signup(userId, lastName, firstName, email, password, location, function(err, values) {
+		if (err) {
+			err.Success = false;
+			response.send(err);
+			return
+		}
+
+		response.send({
+			Success: true,
+			Message: "Successfully created profile",
+			UserId: values
+		});
+	});
+})
+
 module.exports = router;
