@@ -13,5 +13,9 @@
   "ZeroResults": {
     "Status": "Failure",
     "ErrorType": "Results Error"
+  },
+  "PasswordError": {
+    "Status": "Failure",
+    "ErrorType": "Verification Error"
   }
 }

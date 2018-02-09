@@ -73,7 +73,39 @@ module.exports = {
       }
       callback(undefined, results.userId);
 		});
-	}
+	},
+
+	login: function(email, password, callback) {
+		var data = {"email":email, "password": password};
+		login(data, function(err, results) {
+			if (err) {
+				if (err.ErrorType == errors.ZeroResults) {
+					callback({ ErrorType: err.ErrorType, Message: "Email not found"}, undefined);
+				} else if (err.ErrorType == errors.PasswordError) {
+					callback({ ErrorType: err.ErrorType, Message: "Password incorrect"}, undefined);
+				} else {
+					callback({ ErrorType: err.ErrorType, Message: "Error in logging in"}, undefined);
+				}
+
+        return
+      }
+			callback(undefined, results);
+		});
+	},
+
+	delete: function(id, callback) {
+    var data = {
+      "id":id
+    }
+
+    deleteProfData(data, function(err) {
+      if (err) {
+        callback({ ErrorType: err.ErrorType, Message: "Could not delete User: "+id});
+        return
+      }
+      callback(undefined);
+    })
+  },
 }
 
 function logEnergyPoints(data, callback) {
@@ -165,10 +197,10 @@ function signup(data, callback) {
 			}
 
 			var query = "INSERT INTO Users (UserId, LastName, FirstName, Email, Password) VALUES (";
-			query += `${userId}, ${lastName}, ${firstName}, ${email}, ${password});`;
+			query += `${userId}, ${lastName}, ${firstName}, ${email}, '${hash}');`;
 			if (data.location != undefined) {
 				query = "INSERT INTO Users (UserId, LastName, FirstName, Email, Password, City, State, Country) VALUES (";
-				query += `${userId}, ${lastName}, ${firstName}, ${email}, ${password}, ${city}, ${state}, ${country});`;
+				query += `${userId}, ${lastName}, ${firstName}, ${email}, '${hash}', ${city}, ${state}, ${country});`;
 			}
 
 			connection.query(query, function(error, result) {
@@ -182,5 +214,71 @@ function signup(data, callback) {
 				callback(undefined, {"userId":userId});
 			});
 		})
+	});
+}
+
+function login(data, callback) {
+	pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err.message);
+			callback(errors.ConnectionFailure, undefined);
+			return;
+		}
+
+		var email = connection.escape(data.email);
+		var password = connection.escape(data.password);
+
+		var query = `SELECT UserId, Password FROM Users WHERE Email=${email};`;
+		connection.query(query, function(error, results, fields) {
+			connection.release();
+			if (error) {
+				console.log(error.message);
+        callback(errors.QueryError, undefined);
+				return
+			}
+
+			if (results.length == 0) {
+				callback(errors.ZeroResults, undefined);
+				return
+			}
+
+			var storedHash = results[0].Password;
+			bcrypt.compare(password, storedHash, function(err, res) {
+				if (res == true) {
+					callback(undefined, { userId: results[0].UserId });
+				} else {
+					callback(errors.PasswordError, undefined);
+				}
+			});
+		});
+	});
+}
+
+function deleteProfData(data, callback) {
+  pool.getConnection(function(err, connection) {
+		if (err) {
+      console.log(err.message);
+      callback(errors.ConnectionFailure);
+			return;
+		}
+		var userId = connection.escape(data.id);
+
+		var epQuery = `DELETE FROM EnergyPoints WHERE UserId=${userId}`;
+		connection.query(epQuery, function(epError, results, fields) {
+			var dataQuery = `DELETE FROM Locale_Data WHERE ProfId=${userId}`
+			connection.query(dataQuery, function(dataError, results, fields) {
+				connection.release();
+				if (epError)
+	        console.log(epError.message);
+				if (dataError)
+					console.log(dataError.message)
+				if (dataError || epError){
+					callback(errors.QueryError);
+					return
+				}
+
+				callback(undefined);
+			});
+		});
 	});
 }

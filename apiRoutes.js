@@ -105,6 +105,22 @@ router.post('/logEnergyPoints', function(request, response) {
 	});
 });
 
+router.post('/deleteProfData', function(request, response) {
+	var userId = request.body.id;
+	user.delete(userId, function(err) {
+		if (err) {
+			err.Success = false;
+			response.send(err);
+			return
+		}
+
+		response.send({
+			Success: true,
+			Message: "Successfully Deleted Profile",
+		});
+	});
+});
+
 router.post('/fetchData', function(request, response) {
 	var userId = request.body.id;
 	var dataType = request.body.dataType;
@@ -188,6 +204,25 @@ router.post('/createAccount', function(request, response) {
 			UserId: values
 		});
 	});
-})
+});
+
+router.post('/login', function(request, response) {
+	var email = request.body.email;
+	var password = request.body.password;
+
+	user.login(email, password, function(err, values) {
+		if (err) {
+			err.Success = false;
+			response.send(err);
+			return
+		}
+
+		response.send({
+			Success: true,
+			Message: "Logged in Successfully",
+			UserId: values.userId
+		});
+	})
+});
 
 module.exports = router;
