@@ -124,8 +124,9 @@ router.post('/deleteProfData', function(request, response) {
 router.post('/fetchData', function(request, response) {
 	var userId = request.body.id;
 	var dataType = request.body.dataType;
+	var assoc = request.body.assoc
 
-	user.fetch(userId, dataType, function(err, values) {
+	user.fetch(userId, dataType, assoc, function(err, values) {
 		if (err) {
 			err.Success = false;
 			response.send(err);

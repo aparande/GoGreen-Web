@@ -39,24 +39,40 @@ module.exports = {
     })
   },
 
-	fetch: function(userId, dataType, callback) {
+	fetch: function(userId, dataType, assoc, callback) {
 		var data = {
       "id":userId,
-			"type": dataType
+			"type": dataType,
     }
 
-		fetchData(data, function(err, results) {
-			if (err) {
-				if (err.ErrorType == errors.ZeroResults) {
-					callback({ ErrorType: err.ErrorType, Message: "Profile not found"}, undefined);
-				} else {
-					callback({ ErrorType: err.ErrorType, Message: "Error in fetching user data"}, undefined);
-				}
+		if (assoc != undefined) {
+			data["assoc"] = assoc;
+			associatedFetch(data, function(err, results) {
+				if (err) {
+					if (err.ErrorType == errors.ZeroResults) {
+						callback({ ErrorType: err.ErrorType, Message: "Profile not found"}, undefined);
+					} else {
+						callback({ ErrorType: err.ErrorType, Message: "Error in fetching user data"}, undefined);
+					}
 
-        return
-      }
-      callback(undefined, results);
-		});
+	        return
+	      }
+	      callback(undefined, results);
+			});
+		} else {
+			fetchData(data, function(err, results) {
+				if (err) {
+					if (err.ErrorType == errors.ZeroResults) {
+						callback({ ErrorType: err.ErrorType, Message: "Profile not found"}, undefined);
+					} else {
+						callback({ ErrorType: err.ErrorType, Message: "Error in fetching user data"}, undefined);
+					}
+
+	        return
+	      }
+	      callback(undefined, results);
+			});
+		}
 	},
 
 	signup: function(userId, lastName, firstName, email, password, location = undefined, callback) {
@@ -148,6 +164,47 @@ function fetchData(data, callback) {
 		var dataType = connection.escape(data.type);
 
 		var query = "SELECT DataType, Month, Amount FROM Locale_Data WHERE ProfId="+userId+" AND DataType="+dataType+";";
+		connection.query(query, function(error, results, fields) {
+			connection.release();
+			if (error) {
+				console.log(error.message);
+        callback(errors.QueryError, undefined);
+				return
+			}
+
+			if (results.length == 0) {
+				callback(errors.ZeroResults, undefined);
+				return
+			}
+
+      callback(undefined, results);
+		});
+	});
+}
+
+//A fetch that returns all associated data with the category such as car specific points or attributes
+function associatedFetch(data, callback) {
+	pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err.message);
+			callback(errors.ConnectionFailure, undefined);
+			return;
+		}
+
+		var userId = connection.escape(data.id);
+		var dataType = data.type;
+
+		dataType += ":";
+
+		if (data.assoc != "") {
+			var dataAssociation = data.assoc;
+			dataType += dataAssociation+":";
+		}
+		dataType += "%";
+
+		dataType = connection.escape(dataType);
+
+		var query = `SELECT DataType, Month, Amount FROM Locale_Data WHERE ProfId=${userId} AND DataType LIKE ${dataType};`;
 		connection.query(query, function(error, results, fields) {
 			connection.release();
 			if (error) {
