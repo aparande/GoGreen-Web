@@ -218,12 +218,38 @@ router.post('/login', function(request, response) {
 			return
 		}
 
+		request.greenSession.userId = values.userId;
+
 		response.send({
 			Success: true,
 			Message: "Logged in Successfully",
-			UserId: values.userId
+			UserId: values.userId,
+			location: values.location,
+			reset: values.reset
 		});
 	})
 });
+
+router.post('/locUpdate', function(request, response) {
+	var userId = request.body.userId;
+	var city = request.body.city;
+	var state = request.body.state;
+	var country = request.body.country;
+	var zip = request.body.zip;
+
+	user.updateLoc(userId, city, state, country, zip, function(err) {
+		if (err) {
+			err.Success = false;
+			response.send(err);
+			return
+		}
+
+		response.send({
+			Success: true,
+			Message: "Successfully updated location",
+			UserId: userId
+		});
+	})
+})
 
 module.exports = router;
