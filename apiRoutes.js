@@ -15,8 +15,9 @@ router.use(bodyParser.json());
 router.post('/logData', function(request, response) {
 	var profId = request.body.profId; var type = request.body.dataType; var month = request.body.month;
 	var amount = request.body.amount; var city = request.body.city; var state = request.body.state; var country = request.body.country;
+	var lastUpdated = request.body.lastUpdated;
 
-	dataManager.input(profId, type, month, amount, city, state, country, function(err) {
+	dataManager.input(profId, type, month, amount, city, state, country, lastUpdated, function(err) {
 		if (err) {
 			err.Success = false;
 			response.send(err);

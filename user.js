@@ -221,7 +221,7 @@ function fetchData(data, callback) {
 		var userId = connection.escape(data.id);
 		var dataType = connection.escape(data.type);
 
-		var query = "SELECT DataType, Month, Amount FROM Locale_Data WHERE ProfId="+userId+" AND DataType="+dataType+";";
+		var query = "SELECT DataType, Month, Amount, LastUpdated FROM Locale_Data WHERE ProfId="+userId+" AND DataType="+dataType+";";
 		connection.query(query, function(error, results, fields) {
 			connection.release();
 			if (error) {
@@ -233,6 +233,13 @@ function fetchData(data, callback) {
 			if (results.length == 0) {
 				callback(errors.ZeroResults, undefined);
 				return
+			}
+
+			for (var i=0; i<results.length; i++) {
+				var rowDate = results[i].LastUpdated;
+				var dateObj = new Date(rowDate);
+				var unixTime = dateObj.getTime()/1000;
+				results[i].LastUpdated = unixTime;
 			}
 
       callback(undefined, results);
@@ -262,7 +269,7 @@ function associatedFetch(data, callback) {
 
 		dataType = connection.escape(dataType);
 
-		var query = `SELECT DataType, Month, Amount FROM Locale_Data WHERE ProfId=${userId} AND DataType LIKE ${dataType};`;
+		var query = `SELECT DataType, Month, Amount, LastUpdated FROM Locale_Data WHERE ProfId=${userId} AND DataType LIKE ${dataType};`;
 		connection.query(query, function(error, results, fields) {
 			connection.release();
 			if (error) {
@@ -274,6 +281,13 @@ function associatedFetch(data, callback) {
 			if (results.length == 0) {
 				callback(errors.ZeroResults, undefined);
 				return
+			}
+
+			for (var i=0; i<results.length; i++) {
+				var rowDate = results[i].LastUpdated;
+				var dateObj = new Date(rowDate);
+				var unixTime = dateObj.getTime()/1000;
+				results[i].LastUpdated = unixTime;
 			}
 
       callback(undefined, results);

@@ -19,7 +19,7 @@ var pool = mysql.createPool(dbCreds);
 var errors = require("./errors.json");
 
 module.exports = {
-  input: function(id, dataType, month, amount, city, state, country, callback) {
+  input: function(id, dataType, month, amount, city, state, country, lastUpdated, callback) {
     var data = {
       "profId": id,
       "dataType": dataType,
@@ -27,7 +27,8 @@ module.exports = {
       "amount": amount,
       "city": city,
       "state": state,
-      "country": country
+      "country": country,
+			"lastUpdated": lastUpdated
     }
 
     inputData(data, function(err) {
@@ -69,16 +70,19 @@ function inputData(data, callback) {
 		var city = connection.escape(data.city);
 		var state = connection.escape(data.state);
 		var country = connection.escape(data.country);
+		var lastUpdated = connection.escape(data.lastUpdated.slice(0, 19).replace('T', ' '));
 
-		var query = "INSERT INTO Locale_Data (ProfId, DataType, Month, Amount, City, State, Country) VALUES (";
+		var query = "INSERT INTO Locale_Data (ProfId, DataType, Month, Amount, City, State, Country, LastUpdated) VALUES (";
 		query += profId+", ";
 		query += type+", ";
 		query += month+", ";
 		query += amount+", ";
 		query += city+", ";
 		query += state+", ";
-		query += country+") ON DUPLICATE KEY UPDATE Amount = VALUES(Amount);";
+		query += country+", ";
+		query += lastUpdated+") ON DUPLICATE KEY UPDATE Amount = VALUES(Amount), LastUpdated = VALUES(LastUpdated);";
 
+		//console.log(query);
 		connection.query(query, function(error, results, fields) {
 			if (error) {
         console.log(error.message);
