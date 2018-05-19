@@ -221,7 +221,7 @@ function fetchData(data, callback) {
 		var userId = connection.escape(data.id);
 		var dataType = connection.escape(data.type);
 
-		var query = "SELECT DataType, Month, Amount, LastUpdated FROM Locale_Data WHERE ProfId="+userId+" AND DataType="+dataType+";";
+		var query = "SELECT DataType, Month, Amount, LastUpdated, IsDeleted FROM Locale_Data WHERE ProfId="+userId+" AND DataType="+dataType+";";
 		connection.query(query, function(error, results, fields) {
 			connection.release();
 			if (error) {
@@ -269,7 +269,7 @@ function associatedFetch(data, callback) {
 
 		dataType = connection.escape(dataType);
 
-		var query = `SELECT DataType, Month, Amount, LastUpdated FROM Locale_Data WHERE ProfId=${userId} AND DataType LIKE ${dataType};`;
+		var query = `SELECT DataType, Month, Amount, LastUpdated, IsDeleted FROM Locale_Data WHERE ProfId=${userId} AND DataType LIKE ${dataType};`;
 		connection.query(query, function(error, results, fields) {
 			connection.release();
 			if (error) {

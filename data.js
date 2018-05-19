@@ -80,7 +80,7 @@ function inputData(data, callback) {
 		query += city+", ";
 		query += state+", ";
 		query += country+", ";
-		query += lastUpdated+") ON DUPLICATE KEY UPDATE Amount = VALUES(Amount), LastUpdated = VALUES(LastUpdated);";
+		query += lastUpdated+") ON DUPLICATE KEY UPDATE Amount = VALUES(Amount), LastUpdated = VALUES(LastUpdated), IsDeleted = '0';";
 
 		//console.log(query);
 		connection.query(query, function(error, results, fields) {
@@ -108,7 +108,8 @@ function deleteData(data, callback) {
 		var type = connection.escape(data.dataType);
 		var month = connection.escape(data.month);
 
-		var query = "DELETE FROM Locale_Data WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
+		//var query = "DELETE FROM Locale_Data WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
+		var query = `UPDATE Locale_Data SET IsDeleted='1', LastUpdated = NOW() WHERE ProfId=${profId} AND DataType=${type} AND Month=${month};`;
 		connection.query(query, function(error, results, fields) {
 			if (error) {
         console.log(error.message);
