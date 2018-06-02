@@ -70,7 +70,12 @@ function inputData(data, callback) {
 		var city = connection.escape(data.city);
 		var state = connection.escape(data.state);
 		var country = connection.escape(data.country);
-		var lastUpdated = connection.escape(data.lastUpdated.slice(0, 19).replace('T', ' '));
+		//var lastUpdated = connection.escape(data.lastUpdated.slice(0, 19).replace('T', ' '));
+		//Keep everything in UTC so its a standardized time (timestamp needs to be in milliseconds)
+		var timestamp = data.lastUpdated * 1000;
+		var lastUpdated = (new Date(timestamp)).toISOString().slice(0, 19).replace('T', ' ');
+		lastUpdated = connection.escape(lastUpdated);
+
 
 		var query = "INSERT INTO Locale_Data (ProfId, DataType, Month, Amount, City, State, Country, LastUpdated) VALUES (";
 		query += profId+", ";
@@ -109,7 +114,7 @@ function deleteData(data, callback) {
 		var month = connection.escape(data.month);
 
 		//var query = "DELETE FROM Locale_Data WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
-		var query = `UPDATE Locale_Data SET IsDeleted='1', LastUpdated = NOW() WHERE ProfId=${profId} AND DataType=${type} AND Month=${month};`;
+		var query = `UPDATE Locale_Data SET IsDeleted='1', LastUpdated = UTC_TIMESTAMP() WHERE ProfId=${profId} AND DataType=${type} AND Month=${month};`;
 		connection.query(query, function(error, results, fields) {
 			if (error) {
         console.log(error.message);

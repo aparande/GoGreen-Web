@@ -237,7 +237,7 @@ function fetchData(data, callback) {
 
 			for (var i=0; i<results.length; i++) {
 				var rowDate = results[i].LastUpdated;
-				var dateObj = new Date(rowDate);
+				var dateObj = new Date(rowDate + " UTC");
 				var unixTime = dateObj.getTime()/1000;
 				results[i].LastUpdated = unixTime;
 			}
@@ -285,7 +285,7 @@ function associatedFetch(data, callback) {
 
 			for (var i=0; i<results.length; i++) {
 				var rowDate = results[i].LastUpdated;
-				var dateObj = new Date(rowDate);
+				var dateObj = new Date(rowDate + " UTC");
 				var unixTime = dateObj.getTime()/1000;
 				results[i].LastUpdated = unixTime;
 			}
