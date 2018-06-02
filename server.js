@@ -82,11 +82,11 @@ app.post('/reset', function(request, response) {
 			var newPassword = results.password;
 
 			var subject = "Password Reset Requested";
-			var message = `Dear, ${name}.\n\n\tWe recently received a password reset request for your GoGreen account. \
-	In order to reset your password, please login to GoGreen with the provided temporary password to begin the \
-	reset process. If you did not request a password reset, then we recommend you still change your password to increase \
-	the security of your account.\n\nTemporary Password: ${newPassword}\nReset Link:\n\n If you have any questions, \
-	please let us know.\n\nBest,\nThe GoGreen Team`;
+			var message = `Dear, ${name}.\n\nWe recently received a password reset request for your GoGreen account. \
+In order to reset your password, please login to GoGreen with the provided temporary password to begin the \
+reset process. If you did not request a password reset, then we recommend you still change your password to increase \
+the security of your account.\n\nTemporary Password: ${newPassword}\nReset Link: www.gogreenapp.org/login\n\nIf you have any questions, \
+please let us know.\n\nBest,\nThe GoGreen Team`;
 			sendEmail(email, subject, message, function(results) {
 				response.setHeader('Access-Control-Allow-Origin', '*');
 				response.send(results);
@@ -104,6 +104,7 @@ app.post('/reset', function(request, response) {
 				});
 				return;
 			}
+
 			response.send({
 				Success: true,
 				status: "Success",
