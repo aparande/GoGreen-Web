@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Anmol Parande">
+
+    <title>GoGreen</title>
+
+    <% include ../partials/imports %>
+    <!-- Theme CSS -->
+    <link href="css/new-age.css" rel="stylesheet">
+</head>
+
+<body>
+    <% include ../partials/navbar %>
+    <section>
+      <div class="container">
+          <div class="row">
+              <div class="col-md-4">
+                <!-- Empty Column for Spacing -->
+              </div>
+              <div class="col-md-4">
+                <div class="panel">
+                  <h1 class="panel-header">Reset Password</h1>
+                  <div class="panel-body" id="resetPanel">
+                    <form role="form" id="<%= (request)? 'reset-request-form' : 'reset-form' %>" class="contact-form">
+                      <% if (request) { %>
+                        <div class="form-group">
+                          <input type="email" class="form-control" name="email" autocomplete="off" id="email" placeholder="E-mail" required>
+                        </div>
+                        <% } else { %>
+                          <div class="form-group">
+                            <input type="password" class="form-control" name="newPass" autocomplete="off" id="newPass" placeholder="New Password" required>
+                          </div>
+                          <div class="form-group">
+                            <input type="password" class="form-control" name="retypePass" autocomplete="off" id="retypePass" placeholder="Re-enter Password" required>
+                          </div>
+                        <% } %>
+                        <button type="submit" class="btn btn-outline-green btn-xl"><%= (request)? 'Request Reset' : 'Set Password' %></button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <!-- Empty Column for Spacing -->
+              </div>
+          </div>
+      </div>
+    </section>
+
+    <!-- Theme JavaScript -->
+    <script src="js/new-age.js"></script>
+    <script src="js/account.js"></script>
+</body>
+</html>

@@ -9,12 +9,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^1.0.3",
     "body-parser": "^1.17.2",
+    "client-sessions": "^0.8.0",
+    "cookie-parser": "^1.4.3",
     "dotenv": "^4.0.0",
+    "ejs": "^2.5.7",
     "express": "^4.15.3",
-    "express-session": "^1.15.3",
     "mysql": "^2.13.0",
     "nodemailer": "^4.0.1",
-    "serve-favicon": "^2.4.3"
+    "serve-favicon": "^2.4.3",
+    "uuid-v4": "^0.1.0"
   }
 }
