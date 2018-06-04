@@ -49,18 +49,20 @@ var dbCreds = {
     user: process.env.DB_USER,
     password: mySQLPass,
     database: process.env.DB_NAME,
-    multipleStatements: true
+    multipleStatements: true,
+		connectionLimit: 10
 };
 
+var pool = mysql.createPool(dbCreds);
 
 app.post('/input', function(request, response) {
-    var con = mysql.createConnection(dbCreds);
-    con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
 			return;
 		}
+
 		var profId = con.escape(request.body.profId);
 		var type = con.escape(request.body.dataType);
 		var month = con.escape(request.body.month);
@@ -79,25 +81,26 @@ app.post('/input', function(request, response) {
 		query += country+");";
 
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
 				console.log(error.message);
 				response.send({status: 'Failed', message:'Could not save data'});
 				return
 			}
-			con.end()
+
 			response.send({status: 'Success', message: "Data saved successfully"});
 		});
-    });
+	});
 });
 
 app.post('/updateDataPoint', function(request, response) {
-    var con = mysql.createConnection(dbCreds);
-    con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
 			return;
 		}
+
 		var profId = con.escape(request.body.profId);
 		var type = con.escape(request.body.dataType);
 		var month = con.escape(request.body.month);
@@ -106,19 +109,19 @@ app.post('/updateDataPoint', function(request, response) {
 		var query = "UPDATE Locale_Data SET Amount = "+amount+" WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
 
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
 				console.log(error.message);
 				response.send({status: 'Failed', message:'Could not update data'});
 			}
-			con.end()
+
 			response.send({status: 'Success', message: "Data updated successfully"});
 		});
-    });
+	})
 });
 
 app.post('/deleteDataPoint', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
@@ -131,29 +134,30 @@ app.post('/deleteDataPoint', function(request, response) {
 
 		var query = "DELETE FROM Locale_Data WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
 				console.log(error.message);
 				response.send({status: 'Failed', message: 'Could not delete data'});
 			}
-			con.end()
+
 			response.send({status:'Success', message: "Data deleted successfully"});
 		});
 	});
 });
 
 app.post('/getFromEGrid', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
 			return;
 		}
+
 		var zip = con.escape(request.body.zip);
-		//var state = con.escape(request.body.state);
 
 		var query = "SELECT e_factor, Subregion FROM EGrid WHERE Zip="+zip+";";
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
 				console.log(error.message);
 				response.send({status: 'Failed', message: 'Could not find E_Factor because of Error'});
@@ -165,7 +169,6 @@ app.post('/getFromEGrid', function(request, response) {
 				return
 			}
 
-			con.end()
 			response.send({
 				status:'Success',
 				message: "E_Factor retrieved successfully",
@@ -177,27 +180,25 @@ app.post('/getFromEGrid', function(request, response) {
 });
 
 app.post('/getFromConsumption', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
-			con.end()
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
 			return;
 		}
+
 		var type = con.escape(request.body.type);
 		var state = con.escape(request.body.state);
 		var country = con.escape(request.body.country);
 
 		var query = "SELECT Year, Consumption from Consumption WHERE Type="+type+" AND State="+state+" AND Country="+country+";";
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
-				con.end()
 				console.log(error.message);
 				response.send({status: 'Failed', message: 'Could not add data'});
 			}
 			if (results.length == 0) {
-				con.end()
 				console.log("Couldn't find Consumption for Query: "+type+", "+state+", "+country)
 				response.send({
 					status: 'Failed',
@@ -206,7 +207,6 @@ app.post('/getFromConsumption', function(request, response) {
 				return;
 			}
 
-			con.end()
 			response.send({
 				status:'Success',
 				message: "Consumption retrieved successfully",
@@ -218,13 +218,13 @@ app.post('/getFromConsumption', function(request, response) {
 });
 
 app.post('/logEnergyPoints', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
 			return;
 		}
+
 		var userId = con.escape(request.body.id);
 		var state = con.escape(request.body.state);
 		var country = con.escape(request.body.country);
@@ -234,42 +234,43 @@ app.post('/logEnergyPoints', function(request, response) {
 		var query = "INSERT INTO EnergyPoints (UserId, State, Country, City, Points) VALUES (";
 		query += userId+", "+state+", "+country+", "+city+", "+points+");";
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
 				console.log(error.message);
 				response.send({status: 'Failed', message: 'Could not add Energy Points'});
 			}
-			con.end()
+
 			response.send({status:'Success', message: "Energy Points added successfully"});
 		});
 	});
 });
 
 app.post('/updateEnergyPoints', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
 			return;
 		}
+
 		var userId = con.escape(request.body.id);
 		var points = con.escape(request.body.points);
 
 		var query = "UPDATE EnergyPoints SET Points="+points+" WHERE UserId="+userId+";";
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
 				console.log(error.message);
 				response.send({status: 'Failed', message: 'Could not update Energy points'});
 			}
-			con.end()
+
 			response.send({status:'Success', message: "Energy points successfully updated"});
 		});
 	});
 });
 
 app.post('/getCityRank', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
@@ -286,11 +287,12 @@ app.post('/getCityRank', function(request, response) {
 		query += "SELECT COUNT(UserId) as Count FROM EnergyPoints WHERE City="+city+" AND State="+state+" AND Country="+country+";";
 
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
 				console.log(error.message);
 				response.send({status: 'Failed', message: 'Could not add data'});
 			}
-			con.end();
+
 			if (results[0].length == 0) {
 				response.send({
 					"status":"Failure",
@@ -310,8 +312,7 @@ app.post('/getCityRank', function(request, response) {
 });
 
 app.post('/getStateRank', function(request, response) {
-	var con = mysql.createConnection(dbCreds);
-	con.connect(function(err) {
+	pool.getConnection(function(err, con) {
 		if (err) {
 			console.log(err.message);
 			response.send({status: 'Failure', message:'Failed to connect to SQL Server'});
@@ -327,11 +328,11 @@ app.post('/getStateRank', function(request, response) {
 		query += "SELECT COUNT(UserId) as Count FROM EnergyPoints WHERE State="+state+" AND Country="+country+";";
 
 		con.query(query, function(error, results, fields) {
+			con.release();
 			if (error) {
 				console.log(error.message);
 				response.send({status: 'Failed', message: 'Could not add data'});
 			}
-			con.end();
 
 			if (results[0].length == 0) {
 				response.send({
@@ -346,7 +347,7 @@ app.post('/getStateRank', function(request, response) {
 				"Rank":results[0][0].rank,
 				"Count":results[1][0].Count
 			});
-		})
+		});
 	});
 });
 //End legacy functions
@@ -446,6 +447,9 @@ app.get('*', function(request, response) {
 });
 
 app.listen(process.env.PORT || 8000, function() {
+	if (process.env.MODE != "development") {
+		console.warn('WARNING: Server is running in PRODUCTION mode. Set process.env.MODE=development to switch to development')
+	}
 	console.log('Express server listening on port %d in %s mode', this.address().port, process.env.MODE);
 });
 

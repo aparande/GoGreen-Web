@@ -337,12 +337,12 @@ function signup(data, callback) {
 			}
 
 			connection.query(query, function(error, result) {
+				connection.release();
 				if (error) {
 	        console.log(error.message);
 	        callback(errors.QueryError, undefined);
 					return
 				}
-				connection.release();
 
 				callback(undefined, {"userId":userId});
 			});

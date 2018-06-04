@@ -89,12 +89,12 @@ function inputData(data, callback) {
 
 		//console.log(query);
 		connection.query(query, function(error, results, fields) {
+			connection.release();
 			if (error) {
         console.log(error.message);
         callback(errors.QueryError);
 				return
 			}
-			connection.release();
 
 			callback(undefined);
 		});
@@ -116,12 +116,12 @@ function deleteData(data, callback) {
 		//var query = "DELETE FROM Locale_Data WHERE ProfId = "+profId+" AND DataType = "+type+" AND Month = "+month+";";
 		var query = `UPDATE Locale_Data SET IsDeleted='1', LastUpdated = UTC_TIMESTAMP() WHERE ProfId=${profId} AND DataType=${type} AND Month=${month};`;
 		connection.query(query, function(error, results, fields) {
+			connection.release();
 			if (error) {
         console.log(error.message);
         callback(errors.QueryError);
 				return
 			}
-			connection.release()
 
 			callback(undefined);
 		});
